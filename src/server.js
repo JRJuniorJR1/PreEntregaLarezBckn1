@@ -8,9 +8,8 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const productManager = new ProductManager('products.json');
-const cartManager = new CartManager('carts.json', productManager);
-
+const productManager = new ProductManager('./src/items/products.json');
+const cartManager = new CartManager('./src/items/carts.json', productManager);
 
 app.get('/api/products', (req, res) => {
     try {
@@ -66,7 +65,7 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-app.get('/api/carts', (req, res) => {
+app.get('/api/carts', async (req, res) => { 
     try {
         const allCarts = cartManager.getAllCarts();
         res.json(allCarts);
@@ -75,7 +74,7 @@ app.get('/api/carts', (req, res) => {
     }
 });
 
-app.post('/api/carts', (req, res) => {
+app.post('/api/carts', async (req, res) => {
     try {
         const cart = cartManager.createCart();
         res.status(201).json({ cart, message: 'Carrito creado satisfactoriamente' });
@@ -84,7 +83,7 @@ app.post('/api/carts', (req, res) => {
     }
 });
 
-app.get('/api/carts/:cid', (req, res) => {
+app.get('/api/carts/:cid', async (req, res) => {
     const cid = parseInt(req.params.cid);
     try {
         const cart = cartManager.getCartById(cid);
@@ -94,23 +93,23 @@ app.get('/api/carts/:cid', (req, res) => {
     }
 });
 
-app.post('/api/carts/:cid/product/:pid', (req, res) => {
+app.post('/api/carts/:cid/product/:pid', async (req, res) => {
     const cid = parseInt(req.params.cid);
     const pid = parseInt(req.params.pid);
     const quantity = parseInt(req.body.quantity || 1);
 
     try {
-        cartManager.addProductToCart(cid, pid, quantity);
+        await cartManager.addProductToCart(cid, pid, quantity);
         res.json({ message: 'Producto agregado al carrito satisfactoriamente' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
 
-app.delete('/api/carts/:cid', (req, res) => {
+app.delete('/api/carts/:cid', async (req, res) => {
     const cid = parseInt(req.params.cid);
     try {
-        cartManager.deleteCart(cid);
+        await cartManager.deleteCart(cid); 
         res.json({ message: 'Carrito eliminado satisfactoriamente' });
     } catch (error) {
         res.status(404).json({ error: error.message });
